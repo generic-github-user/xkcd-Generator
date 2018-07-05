@@ -10,28 +10,15 @@ const numTrainingImages = 15;
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 3;
 
-// Get information for main canvas elements
-const canvas = {
-	// Get information for input canvas to display randomly selected input image for the autoencoder
-	"input": document.getElementById("inputCanvas"),
-	// Get information for output canvas to display autoencoded representation of the original input image
-	"output": document.getElementById("outputCanvas")
-}
-// Get context for main canvas elements
-const context = {
-	// Get context for input canvas
-	"input": canvas.input.getContext("2d"),
-	// Get context for output canvas
-	"output": canvas.output.getContext("2d")
-}
+// Get information for canvas
+const canvas = document.getElementById("canvas");
+// Get context for canvas
+const context = canvas.getContext("2d");
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
-canvas.input.width = imageSize;
-canvas.input.height = imageSize;
-// Output canvas
-canvas.output.width = imageSize;
-canvas.output.height = imageSize;
+canvas.width = imageSize;
+canvas.height = imageSize;
 
 // Define encoder network with the high-level TensorFlow.js layers system
 // This network takes a high-dimensional input image and reduces it to a low-dimensional "latent-space" representation
@@ -202,7 +189,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Set input image tensor dtype to "int32"
 	input.dtype = "int32";
 	// Display input image on the input canvas, then dispose of the input tensor
-	tf.toPixels(input, canvas.input).then(() => input.dispose());
+	tf.toPixels(input, canvas).then(() => input.dispose());
 
 	function printLoss(model) {
 		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
@@ -261,7 +248,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		output.dtype = "int32";
 
 		// Display the output tensor on the output canvas, then dispose the tensor
-		tf.toPixels(output, canvas.output).then(() => output.dispose());
+		tf.toPixels(output, canvas).then(() => output.dispose());
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
 	var interval = window.setInterval(train, 100);
