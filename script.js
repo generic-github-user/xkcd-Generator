@@ -3,7 +3,7 @@
 // Define settings
 const numLayers = 9;
 // Size of input and output images in pixels (width and height)
-const imageSize = 32;
+const imageSize = 16;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 
@@ -15,7 +15,7 @@ const imageVolume = (imageSize ** 2) * 3;
 const canvas = document.getElementById("canvas");
 // Get context for canvas
 const context = canvas.getContext("2d");
-const parameters = tf.randomNormal([1, 4]);
+const parameters = tf.randomNormal([1, 6]);
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
@@ -33,7 +33,7 @@ const generator = {
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
-				generator.model.predict(trainingData.tensor.input),
+				generator.model.predict(parameters),
 				trainingData.tensor.output
 			);
 		}
@@ -78,7 +78,7 @@ for (var i = 0; i < numLayers; i ++) {
 // Define loss function for neural network training: Mean squared error
 loss = (input, output) => input.sub(output).square().mean();
 // Learning rate for optimization algorithm
-const learningRate = 1;
+const learningRate = 0.1;
 // Optimization function for training neural networks
 optimizer = tf.train.adam(learningRate);
 
@@ -153,25 +153,17 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		currentLoss.dispose();
 	}
 
-	console.log("Begin classifier network training");
-	for (var i = 0; i < 100; i ++) {
-		printLoss(classifier);
-		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
-		optimizer.minimize(classifier.calculateLoss);
-	}
-	console.log("End classifier network training");
-
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
 		// adversarial
 
-		printLoss(classifier);
+		printLoss(generator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
-		optimizer.minimize(classifier.calculateLoss);
+		optimizer.minimize(generator.calculateLoss);
 
-		printLoss(dreamer);
+		printLoss(discriminator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
-		optimizer.minimize(dreamer.calculateLoss);
+		optimizer.minimize(discriminator.calculateLoss);
 
 		// All this is just display code
 		// Calculate autoencoder output from original image
