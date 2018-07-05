@@ -94,9 +94,9 @@ const trainingData = {
 // Add training data to trainingData.images array as an HTML image element
 // Loop through each training image
 
-for (var j = 0; j < numTrainingImages; j ++) {
+for (var i = 0; i < numTrainingImages; i ++) {
 	// Create a new HTML image element with the specified dimensions and set current array index to this element (array.push does not work here)
-	trainingData.images[j] = new Image(imageSize, imageSize);
+	trainingData.images[i] = new Image(imageSize, imageSize);
 }
 
 // Wait for last image (testing data) to load before continuing
@@ -106,9 +106,9 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	var pixels;
 	// Loop through each training image
 
-	for (var j = 0; j < numTrainingImages; j ++) {
+	for (var i = 0; i < numTrainingImages; i ++) {
 		// Create a tensor with 3 (RGB) color channels from the image element
-		pixels = tf.fromPixels(trainingData.images[j], 3);
+		pixels = tf.fromPixels(trainingData.images[i], 3);
 		// Resize image to the specified dimensions with resizeBilinear()
 		pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
 		// Get the values array from the pixels tensor
@@ -119,7 +119,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		// The whole pixels array is not pushed on at once because the array format will be incompatible
 		pixels.forEach(
 			// Add color value to the corresponding image's trainingData.pixels array
-			(element) => trainingData.pixels[j].push(element)
+			(element) => trainingData.pixels[i].push(element)
 		);
 	}
 	// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
