@@ -1,8 +1,9 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
+const numLayers = 7;
 // Size of input and output images in pixels (width and height)
-const imageSize = 64;
+const imageSize = 16;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 
@@ -20,110 +21,57 @@ const context = canvas.getContext("2d");
 canvas.width = imageSize;
 canvas.height = imageSize;
 
-// Define encoder network with the high-level TensorFlow.js layers system
-// This network takes a high-dimensional input image and reduces it to a low-dimensional "latent-space" representation
+
+// Define generator network with the high-level TensorFlow.js layers system
+// This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
 // Define encoder network layers
-const classifier = {
-	// Input layer with the same number of units as the volume of the input image
-	"input": tf.input({shape: imageVolume}),
-	// Hidden layers
-	"hidden": [
-		// First hidden layer - dense layer with 500 units and a relu activation function
-		tf.layers.dense({units: 500, activation: "relu"}),
-		// Second hidden layer - dense layer with 300 units and a relu activation function
-		tf.layers.dense({units: 300, activation: "relu"}),
-		// Third hidden layer - dense layer with 100 units and a relu activation function
-		tf.layers.dense({units: 100, activation: "relu"})
-	],
-	// Wrap loss calculation function in a tf.tidy so that intermediate tensors are disposed of when the calculation is finished
+const generator = {
+	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
 		// Calculate loss
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
-				classifier.model.predict(trainingData.tensor.input),
+				generator.model.predict(trainingData.tensor.input),
 				trainingData.tensor.output
 			);
 		}
 	)
 };
-// Define data flow through encoder model layers
-// Output layer is a dense layer with 5 units that is calculated by applying the third ([2]) hidden layer
-classifier.output = tf.layers.dense({units: 2}).apply(
-	// Third hidden layer is calculated by applying the second ([1]) hidden layer
-	classifier.hidden[2].apply(
-		// Third hidden layer is calculated by applying the first ([0]) hidden layer
-		classifier.hidden[1].apply(
-			// First hidden layer is calculated by applying the input
-			classifier.hidden[0].apply(
-				// Encoder network input
-				classifier.input
-			)
-		)
-	)
-);
 
-// Define decoder network
-// This network takes a low-dimensional "latent-space" representation of the input image (created by the encoder network) and creates a high-dimensional output image (meant to match the original input image)
-// Define decoder network layers
-const dreamer = {
-	// Input layer with the same number of units as the output of the encoder network (the number of latent variables)
-	"input": tf.input({shape: imageVolume}),
-	// Hidden layers
-	"hidden": [
-		// First hidden layer - dense layer with 100 units and a relu activation function
-		tf.layers.dense({units: Math.round(imageVolume / 2), activation: "relu"}),
-		// Second hidden layer - dense layer with 300 units and a relu activation function
-		tf.layers.dense({units: Math.round(imageVolume / 2), activation: "relu"}),
-		// Third hidden layer - dense layer with 500 units and a relu activation function
-		tf.layers.dense({units: Math.round(imageVolume / 2), activation: "relu"})
-	],
-	// Wrap loss calculation function in a tf.tidy so that intermediate tensors are disposed of when the calculation is finished
+generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
+console.log(6);
+for (var i = 0; i < 7; i ++) {
+	const layerSize = Math.round(imageVolume / (2 ** (6 - i)));
+	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
+	console.log(layerSize);
+}
+
+// Define generator network with the high-level TensorFlow.js layers system
+// This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
+// Define encoder network layers
+const discriminator = {
+	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
 		// Calculate loss
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
-				classifier.model.predict(trainingData.tensor.input),
-				classTargets
+				discriminator.model.predict(trainingData.tensor.input),
+				trainingData.tensor.output
 			);
 		}
 	)
 };
-// Define data flow through decoder model layers
-// Output layer is a dense layer with the same number of units as the input image/data that is calculated by applying the third ([2]) hidden layer
-dreamer.output = tf.layers.dense({units: imageVolume}).apply(
-	// Third hidden layer is calculated by applying the second ([1]) hidden layer
-	dreamer.hidden[2].apply(
-		// Third hidden layer is calculated by applying the first ([0]) hidden layer
-		dreamer.hidden[1].apply(
-			// First hidden layer is calculated by applying the input
-			dreamer.hidden[0].apply(
-				// Decoder network input
-				dreamer.input
-			)
-		)
-	)
-);
 
-// Create a new TensorFlow.js model to act as the encoder network in the autoencoder
-classifier.model = tf.model(
-	{
-		// Set inputs to predefined encoder network input layer
-		"inputs": classifier.input,
-		// Set outputs to predefined encoder network outputs layer
-		"outputs": classifier.output
-	}
-);
-// Create a new model to act as the decoder network in the autoencoder
-dreamer.model = tf.model(
-	{
-		// Set inputs to predefined decoder network input layer
-		"inputs": dreamer.input,
-		// Set outputs to predefined decoder network outputs layer
-		"outputs": dreamer.output
-	}
-);
+discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
+console.log(imageVolume);
+for (var i = 0; i < 7; i ++) {
+	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
+	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
+	console.log(layerSize);
+}
+
 
 // Neural network training/optimization
 // Define loss function for neural network training: Mean squared error
