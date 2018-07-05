@@ -15,6 +15,7 @@ const imageVolume = (imageSize ** 2) * 3;
 const canvas = document.getElementById("canvas");
 // Get context for canvas
 const context = canvas.getContext("2d");
+const parameters = tf.randomNormal([1, 4]);
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
@@ -179,12 +180,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		tf.tidy(
 			() => {
 				// Decode the low-dimensional representation of the input data created by the encoder
-				return dreamer.model.predict(
-					// Create a tensor from the array of pixel values for the randomly selected input image
-					tf.tensor(
-						[trainingData.pixels[index]]
-					)
-				)
+				return generator.model.predict(parameters)
 				// Clip pixel values to a 0 - 255 (int32) range
 				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
