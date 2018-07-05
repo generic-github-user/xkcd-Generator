@@ -1,9 +1,9 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numLayers = 7;
+const numLayers = 9;
 // Size of input and output images in pixels (width and height)
-const imageSize = 16;
+const imageSize = 32;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 
@@ -41,8 +41,8 @@ const generator = {
 
 generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
 console.log(6);
-for (var i = 0; i < 7; i ++) {
-	const layerSize = Math.round(imageVolume / (2 ** (6 - i)));
+for (var i = 0; i < numLayers; i ++) {
+	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
 	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
 	console.log(layerSize);
 }
@@ -66,7 +66,7 @@ const discriminator = {
 
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 console.log(imageVolume);
-for (var i = 0; i < 7; i ++) {
+for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
 	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
 	console.log(layerSize);
