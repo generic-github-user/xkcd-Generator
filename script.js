@@ -3,7 +3,7 @@
 // Define settings
 const numLayers = 9;
 // Size of input and output images in pixels (width and height)
-const imageSize = 16;
+const imageSize = 32;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 
@@ -33,8 +33,10 @@ const generator = {
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
-				generator.model.predict(parameters),
-				trainingData.tensor.output
+				discriminator.model.predict(
+					generator.model.predict(parameters)
+				),
+				tf.scalar(-1)
 			);
 		}
 	)
@@ -73,14 +75,13 @@ for (var i = 0; i < numLayers; i ++) {
 	console.log(layerSize);
 }
 
-
 // Neural network training/optimization
 // Define loss function for neural network training: Mean squared error
-loss = (input, output) => input.sub(output).square().mean();
+loss = (input, output) => input.sub(output).abs().mean();
 // Learning rate for optimization algorithm
-const learningRate = 0.1;
+const learningRate = 0.0000001;
 // Optimization function for training neural networks
-optimizer = tf.train.adam(learningRate);
+optimizer = tf.train.sgd(learningRate);
 
 // Create object to store training data in image, pixel, and tensor format
 const trainingData = {
@@ -125,8 +126,6 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	}
 	// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
 	trainingData.tensor.input = tf.tensor(trainingData.pixels);
-	// Create a tensor from the pixel values of the testing data and store it in trainingData.tensor.input
-	trainingData.tensor.input = tf.tensor(trainingData.pixels);
 
 	trainingData.tensor.output = tf.ones([numTrainingImages, 1]);
 	trainingData.tensor.output.dtype = "float32";
@@ -140,13 +139,14 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Display input image on the input canvas, then dispose of the input tensor
 	tf.toPixels(input, canvas).then(() => input.dispose());
 
+	var currentLoss;
 	function printLoss(model) {
 		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
 		console.log(tf.memory());
 		// Use tidy here
 		// Print current neural network loss to console
 		// Calculate loss value and store it in a constant
-		const currentLoss = model.calculateLoss();
+		currentLoss = model.calculateLoss();
 		// Print loss to console
 		currentLoss.print();
 		// Dispose of loss value
@@ -155,7 +155,6 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
-		// adversarial
 
 		printLoss(generator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
