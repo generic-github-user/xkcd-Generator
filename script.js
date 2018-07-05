@@ -1,4 +1,4 @@
-// Main JavaScript for TensorFlow.js Deep Dream
+// Main JavaScript for xkcd Generator
 
 // Define settings
 // Size of input and output images in pixels (width and height)
