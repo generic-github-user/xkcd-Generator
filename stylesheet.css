@@ -9,6 +9,6 @@ body {
 	height: 100%;
 }
 canvas {
-	width: 100%;
-	/* image-rendering: pixelated; */
+	width: 50%;
+	image-rendering: pixelated;
 }

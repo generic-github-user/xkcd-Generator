@@ -2,7 +2,7 @@
 
 // Define settings
 // Size of input and output images in pixels (width and height)
-const imageSize = 50;
+const imageSize = 64;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 
