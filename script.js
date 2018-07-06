@@ -104,7 +104,10 @@ const trainingData = {
 	// Store training data as HTML image elements
 	"images": [],
 	// Store training data as raw arrays of pixel data
-	"pixels": [],
+	"pixels": {
+		input: [],
+		output: []
+	},
 	// Store training data as a TensorFlow.js tensor
 	"tensor": {}
 }
@@ -122,6 +125,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Create training data from pixels of image elements
 	// Create a new variable to store the data
 	var pixels;
+	var pixelsArray;
+	var outputValues;
 	// Loop through each training image
 
 	for (var i = 0; i < numTrainingImages; i ++) {
@@ -131,29 +136,42 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
 		// Get the values array from the pixels tensor
 		pixels = pixels.dataSync();
-		// Add new array to trainingData.pixels to store the pixel values for the image
-		trainingData.pixels.push([]);
+		// Add new array to trainingData.pixels.input to store the pixel values for the image
+		pixelsArray = [];
 		// Loop through each value in the pixels array
 		// The whole pixels array is not pushed on at once because the array format will be incompatible
 		pixels.forEach(
-			// Add color value to the corresponding image's trainingData.pixels array
-			(element) => trainingData.pixels[i].push(element)
+			// Add color value to the corresponding image's trainingData.pixels.input array
+			(element) => pixelsArray.push(element)
 		);
+		trainingData.pixels.input.push(pixelsArray);
+		outputValues = new Array(6).fill(1);
+		trainingData.pixels.output.push(outputValues);
+
+		// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
+		const generated = generator.model.predict(parameters.display).dataSync();
+		const generatedArray = [];
+		generated.forEach(
+			(element) => generatedArray.push(element)
+		);
+		trainingData.pixels.input.push(generatedArray);
+		// generated.dispose();
+
+		outputValues = new Array(6).fill(-1);
+		trainingData.pixels.output.push(outputValues);
 	}
 
-	for (var i = 0; i < numTrainingImages; i ++) {
-		trainingData.pixels.push();
-	}
 	// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
-	trainingData.tensor.input = tf.tensor(trainingData.pixels);
+	trainingData.tensor.input = tf.tensor(trainingData.pixels.input);
+	trainingData.tensor.output = tf.tensor(trainingData.pixels.output);
 
-	trainingData.tensor.output = tf.ones([numTrainingImages, 6]);
-	trainingData.tensor.output.dtype = "float32";
+	// trainingData.tensor.output = tf.ones([numTrainingImages, 6]);
+	// trainingData.tensor.output.dtype = "float32";
 
 	// Pick a random image from the testing data set to test the network on
-	var index = Math.floor(Math.random() * trainingData.pixels.length);
+	var index = Math.floor(Math.random() * trainingData.pixels.input.length);
 	// Create image tensor from input image pixel data
-	const input = tf.tensor(trainingData.pixels[index], [imageSize, imageSize, 3]);
+	const input = tf.tensor(trainingData.pixels.input[index], [imageSize, imageSize, 3]);
 	// Set input image tensor dtype to "int32"
 	input.dtype = "int32";
 	// Display input image on the input canvas, then dispose of the input tensor
@@ -216,7 +234,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		iteration ++;
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
-	var interval = window.setInterval(train, 100);
+	var interval = window.setInterval(train, 1000);
 }
 // Load source paths for training data images (this must be done after the image elements are created and the onload function is defined)
 // Loop through each image element
