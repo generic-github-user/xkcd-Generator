@@ -49,7 +49,7 @@ const generator = {
 			);
 		}
 	),
-	"optimizer": tf.train.adam(0.0001)
+	"optimizer": tf.train.adam(0.001)
 };
 
 if (logData) {
@@ -59,7 +59,12 @@ if (logData) {
 generator.model.add(tf.layers.dense({units: numParameters, inputShape: [numParameters]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
-	generator.model.add(tf.layers.dense({units: layerSize, activation: "sigmoid"}));
+	if (i == numLayers - 1) {
+		generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
+	}
+	else {
+		generator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
+	}
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -90,7 +95,7 @@ if (logData) {
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
-	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "sigmoid"}));
+	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
 	if (logData) {
 		console.log(layerSize);
 	}
