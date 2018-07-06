@@ -2,12 +2,12 @@
 
 // Define settings
 const numParameters = 3;
-const numLayers = 4;
+const numLayers = 6;
 // Size of input and output images in pixels (width and height)
-const imageSize = 4;
+const imageSize = 8;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
-const logData = true;
+const logData = false;
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
