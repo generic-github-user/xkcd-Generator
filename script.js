@@ -127,20 +127,19 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	var pixelsArray;
 	var outputValues;
 	function generateTrainingData() {
+		trainingData.pixels.input = [];
+		trainingData.pixels.output = [];
+		if (trainingData.tensor.input) {
+			trainingData.tensor.input.dispose();
+		}
+		if (trainingData.tensor.output) {
+			trainingData.tensor.output.dispose();
+		}
 		// Create training data from pixels of image elements
 		// Create a new variable to store the data
 		// Loop through each training image
 
 		for (var i = 0; i < numTrainingImages; i ++) {
-			trainingData.pixels.input = [];
-			trainingData.pixels.output = [];
-			if (trainingData.tensor.input) {
-				trainingData.tensor.input.dispose();
-			}
-			if (trainingData.tensor.output) {
-				trainingData.tensor.output.dispose();
-			}
-
 			// Create a tensor with 3 (RGB) color channels from the image element
 			pixels =
 			tf.tidy(
@@ -284,7 +283,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		iteration ++;
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
-	var interval = window.setInterval(train, 100);
+	var interval = window.setInterval(train, 10);
 }
 // Load source paths for training data images (this must be done after the image elements are created and the onload function is defined)
 // Loop through each image element
