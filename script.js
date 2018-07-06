@@ -15,13 +15,15 @@ const imageVolume = (imageSize ** 2) * 3;
 const canvas = document.getElementById("canvas");
 // Get context for canvas
 const context = canvas.getContext("2d");
-const parameters = tf.randomNormal([1, 6]);
+const parameters = {
+	"training": tf.randomNormal([15, 6]),
+	"display": tf.randomNormal([1, 6])
+}
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
 canvas.width = imageSize;
 canvas.height = imageSize;
-
 
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
@@ -34,9 +36,9 @@ const generator = {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
 				discriminator.model.predict(
-					generator.model.predict(parameters)
+					generator.model.predict(parameters.training)
 				),
-				tf.scalar(-1)
+				tf.ones([15, 6])
 			);
 		}
 	)
@@ -77,7 +79,7 @@ for (var i = 0; i < numLayers; i ++) {
 
 // Neural network training/optimization
 // Define loss function for neural network training: Mean squared error
-loss = (input, output) => input.sub(output).abs().mean();
+loss = (input, output) => input.sub(output).square().mean();
 // Learning rate for optimization algorithm
 const learningRate = 0.0000001;
 // Optimization function for training neural networks
@@ -171,7 +173,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		tf.tidy(
 			() => {
 				// Decode the low-dimensional representation of the input data created by the encoder
-				return generator.model.predict(parameters)
+				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
 				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
