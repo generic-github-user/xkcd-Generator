@@ -49,7 +49,7 @@ const generator = {
 			);
 		}
 	),
-	"optimizer": tf.train.adam(0.001)
+	"optimizer": tf.train.adam(0.01)
 };
 
 if (logData) {
@@ -80,7 +80,7 @@ const discriminator = {
 			);
 		}
 	),
-	"optimizer": tf.train.adam(0.001)
+	"optimizer": tf.train.adam(0.01)
 };
 
 if (logData) {
@@ -252,14 +252,14 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				// Decode the low-dimensional representation of the input data created by the encoder
 				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
-				.clipByValue(0, 1)
+				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
 				.reshape(
 					[imageSize, imageSize, 3]
 				)
 			}
 		);
-		// output.dtype = "int32";
+		output.dtype = "int32";
 
 		const discriminatorOutput =
 		tf.tidy(
