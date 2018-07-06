@@ -1,12 +1,12 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numLayers = 9;
+const numLayers = 7;
 // Size of input and output images in pixels (width and height)
-const imageSize = 32;
+const imageSize = 16;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
-const logData = false;
+const logData = true;
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
@@ -38,6 +38,7 @@ const generator = {
 	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
 		// Calculate loss
+		// Do we need these tidys?
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
@@ -48,7 +49,7 @@ const generator = {
 			);
 		},
 	),
-	"optimizer": tf.train.sgd(0.01)
+	"optimizer": tf.train.sgd(0.001)
 };
 
 if (logData) {
@@ -155,7 +156,6 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			(element) => generatedArray.push(element)
 		);
 		trainingData.pixels.input.push(generatedArray);
-		// generated.dispose();
 
 		outputValues = new Array(6).fill(-1);
 		trainingData.pixels.output.push(outputValues);
@@ -228,7 +228,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		iteration ++;
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
-	var interval = window.setInterval(train, 1000);
+	var interval = window.setInterval(train, 100);
 }
 // Load source paths for training data images (this must be done after the image elements are created and the onload function is defined)
 // Loop through each image element
