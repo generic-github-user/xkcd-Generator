@@ -43,9 +43,11 @@ const generator = {
 				),
 				tf.ones([15, 6])
 			);
-		}
-	)
+		},
+	),
+	"learningRate": 0.01
 };
+generator.optimizer = tf.train.sgd(generator.learningRate);
 
 console.log("Generator");
 generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
@@ -71,8 +73,10 @@ const discriminator = {
 				trainingData.tensor.output
 			);
 		}
-	)
+	),
+	"learningRate": 0.000001
 };
+discriminator.optimizer = tf.train.sgd(discriminator.learningRate);
 
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 console.log(imageVolume);
@@ -85,10 +89,6 @@ for (var i = 0; i < numLayers; i ++) {
 // Neural network training/optimization
 // Define loss function for neural network training: Mean squared error
 loss = (input, output) => input.sub(output).square().mean();
-// Learning rate for optimization algorithm
-const learningRate = 0.0000001;
-// Optimization function for training neural networks
-optimizer = tf.train.sgd(learningRate);
 
 // Create object to store training data in image, pixel, and tensor format
 const trainingData = {
@@ -166,12 +166,12 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		console.log("Generator network loss");
 		printLoss(generator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
-		optimizer.minimize(generator.calculateLoss);
+		generator.optimizer.minimize(generator.calculateLoss);
 
 		console.log("Discriminator network loss");
 		printLoss(discriminator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
-		optimizer.minimize(discriminator.calculateLoss);
+		discriminator.optimizer.minimize(discriminator.calculateLoss);
 
 		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
 		console.log("Memory information");
