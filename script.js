@@ -2,12 +2,16 @@
 
 // Define settings
 const numParameters = 3;
-const numLayers = 6;
+const numLayers = 10;
 // Size of input and output images in pixels (width and height)
-const imageSize = 8;
+const imageSize = 32;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
-const logData = false;
+const logData = true;
+const optimizer = {
+	"generator": tf.train.adam(0.01),
+	"discriminator": tf.train.adam(0.01)
+}
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
@@ -43,13 +47,13 @@ const generator = {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
 			return loss(
 				discriminator.model.predict(
-					generator.model.predict(parameters.training)
+					generator.model.predict(parameters.training).clipByValue(0, 255)
 				),
 				tf.ones([15, numParameters])
 			);
 		}
 	),
-	"optimizer": tf.train.adam(0.01)
+	"optimizer": optimizer.generator
 };
 
 if (logData) {
@@ -59,7 +63,7 @@ if (logData) {
 generator.model.add(tf.layers.dense({units: numParameters, inputShape: [numParameters]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
-	generator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
+	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -80,7 +84,7 @@ const discriminator = {
 			);
 		}
 	),
-	"optimizer": tf.train.adam(0.01)
+	"optimizer": optimizer.discriminator
 };
 
 if (logData) {
@@ -170,7 +174,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
 			const generated =
 			tf.tidy(
-				() => generator.model.predict(parameters.display).dataSync()
+				() => generator.model.predict(parameters.display).clipByValue(0, 255).dataSync()
 			);
 			const generatedArray = [];
 			generated.forEach(
@@ -252,20 +256,20 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				// Decode the low-dimensional representation of the input data created by the encoder
 				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
-				.clipByValue(0, 1)
+				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
 				.reshape(
 					[imageSize, imageSize, 3]
 				)
 			}
 		);
-		// output.dtype = "int32";
+		output.dtype = "int32";
 
 		const discriminatorOutput =
 		tf.tidy(
 			() => {
 				return discriminator.model.predict(
-					generator.model.predict(parameters.display)
+					generator.model.predict(parameters.display).clipByValue(0, 255)
 				);
 			}
 		);
