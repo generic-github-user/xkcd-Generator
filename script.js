@@ -45,9 +45,8 @@ const generator = {
 			);
 		},
 	),
-	"learningRate": 0.01
+	"optimizer": tf.train.sgd(0.01)
 };
-generator.optimizer = tf.train.sgd(generator.learningRate);
 
 console.log("Generator");
 generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
@@ -74,9 +73,8 @@ const discriminator = {
 			);
 		}
 	),
-	"learningRate": 0.000001
+	"optimizer": tf.train.sgd(0.0001)
 };
-discriminator.optimizer = tf.train.sgd(discriminator.learningRate);
 
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 console.log(imageVolume);
