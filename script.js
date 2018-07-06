@@ -19,6 +19,7 @@ const parameters = {
 	"training": tf.randomNormal([15, 6]),
 	"display": tf.randomNormal([1, 6])
 }
+var iteration = 0;
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
@@ -28,6 +29,8 @@ canvas.height = imageSize;
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
 // Define encoder network layers
+console.log("Generative adversarial network layer sizes");
+
 const generator = {
 	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
@@ -44,6 +47,7 @@ const generator = {
 	)
 };
 
+console.log("Generator");
 generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
 console.log(6);
 for (var i = 0; i < numLayers; i ++) {
@@ -55,6 +59,7 @@ for (var i = 0; i < numLayers; i ++) {
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
 // Define encoder network layers
+console.log("Discriminator");
 const discriminator = {
 	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
@@ -143,8 +148,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	var currentLoss;
 	function printLoss(model) {
-		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
-		console.log(tf.memory());
+
 		// Use tidy here
 		// Print current neural network loss to console
 		// Calculate loss value and store it in a constant
@@ -157,14 +161,21 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
+		console.log("Iteration " + iteration);
 
+		console.log("Generator network loss");
 		printLoss(generator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 		optimizer.minimize(generator.calculateLoss);
 
+		console.log("Discriminator network loss");
 		printLoss(discriminator);
 		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 		optimizer.minimize(discriminator.calculateLoss);
+
+		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
+		console.log("Memory information");
+		console.log(tf.memory());
 
 		// All this is just display code
 		// Calculate autoencoder output from original image
@@ -186,6 +197,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 		// Display the output tensor on the output canvas, then dispose the tensor
 		tf.toPixels(output, canvas).then(() => output.dispose());
+
+		iteration ++;
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
 	var interval = window.setInterval(train, 100);
