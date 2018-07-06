@@ -2,7 +2,7 @@
 
 // Define settings
 const numParameters = 3;
-const numLayers = 10;
+
 // Size of input and output images in pixels (width and height)
 const imageSize = 32;
 // Number of images to use when training the neural network
@@ -16,6 +16,7 @@ const optimizer = {
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 3;
+const numLayers = 10;
 // Get information for canvas
 const canvas = document.getElementById("canvas");
 // Get context for canvas
