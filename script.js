@@ -17,8 +17,8 @@ const canvas = document.getElementById("canvas");
 // Get context for canvas
 const context = canvas.getContext("2d");
 const parameters = {
-	"training": tf.randomNormal([15, numParameters]),
-	"display": tf.randomNormal([1, numParameters])
+	"training": tf.randomNormal([15, numParameters], 0, 255),
+	"display": tf.randomNormal([1, numParameters], 0, 255)
 }
 var iteration = 0;
 
