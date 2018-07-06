@@ -132,6 +132,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		// Loop through each training image
 
 		for (var i = 0; i < numTrainingImages; i ++) {
+			trainingData.pixels.input = [];
+			trainingData.pixels.output = [];
 			if (trainingData.tensor.input) {
 				trainingData.tensor.input.dispose();
 			}
@@ -164,6 +166,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 			outputValues = new Array(numParameters).fill(1);
 			trainingData.pixels.output.push(outputValues);
+
 
 			// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
 			const generated =
