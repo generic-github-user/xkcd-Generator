@@ -177,36 +177,30 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Display input image on the input canvas, then dispose of the input tensor
 	tf.toPixels(input, canvas).then(() => input.dispose());
 
-	var currentLoss;
-	function printLoss(model) {
-
-		// Use tidy here
-		// Print current neural network loss to console
-		// Calculate loss value and store it in a constant
-		currentLoss = model.calculateLoss();
-		// Print loss to console
-		currentLoss.print();
-		// Dispose of loss value
-		currentLoss.dispose();
-	}
-
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
+		generatorLoss = generator.calculateLoss();
+		discriminatorLoss = discriminator.calculateLoss();
 		if (logData) {
 			console.log("Iteration " + iteration);
 
 			console.log("Generator network loss");
-			printLoss(generator);
+			generatorLoss.print();
 			// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 
 			console.log("Discriminator network loss");
-			printLoss(discriminator);
+			discriminatorLoss.print();
 			// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 
 			// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
 			console.log("Memory information");
 			console.log(tf.memory());
 		}
+		document.querySelector("#generator-loss").innerHTML = "Generator &#8226; " + generatorLoss.dataSync();
+		document.querySelector("#discriminator-loss").innerHTML = "Discriminator &#8226; " + discriminatorLoss.dataSync();
+
+		generatorLoss.dispose();
+		discriminatorLoss.dispose();
 
 		generator.optimizer.minimize(generator.calculateLoss);
 		discriminator.optimizer.minimize(discriminator.calculateLoss);
