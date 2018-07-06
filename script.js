@@ -181,6 +181,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	function train() {
 		generatorLoss = generator.calculateLoss();
 		discriminatorLoss = discriminator.calculateLoss();
+
 		if (logData) {
 			console.log("Iteration " + iteration);
 
@@ -190,7 +191,6 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 			console.log("Discriminator network loss");
 			discriminatorLoss.print();
-			// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 
 			// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
 			console.log("Memory information");
@@ -230,8 +230,26 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		);
 		output.dtype = "int32";
 
+		const discriminatorOutput =
+		tf.tidy(
+			() => {
+				return discriminator.model.predict(
+					generator.model.predict(parameters.display)
+				);
+			}
+		);
+
+		if (logData) {
+			console.log("Generator output");
+			output.print();
+
+			console.log("Discriminator output");
+			discriminatorOutput.print();
+		}
+
 		// Display the output tensor on the output canvas, then dispose the tensor
 		tf.toPixels(output, canvas).then(() => output.dispose());
+		discriminatorOutput.dispose();
 
 		iteration ++;
 	}
