@@ -6,6 +6,7 @@ const numLayers = 9;
 const imageSize = 32;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
+const logData = false;
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
@@ -29,7 +30,9 @@ canvas.height = imageSize;
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
 // Define encoder network layers
-console.log("Generative adversarial network layer sizes");
+if (logData) {
+	console.log("Generative adversarial network layer sizes");
+}
 
 const generator = {
 	"model": tf.sequential(),
@@ -48,19 +51,22 @@ const generator = {
 	"optimizer": tf.train.sgd(0.01)
 };
 
-console.log("Generator");
+if (logData) {
+	console.log("Generator");
+	console.log(6);
+}
 generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
-console.log(6);
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
 	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
-	console.log(layerSize);
+	if (logData) {
+		console.log(layerSize);
+	}
 }
 
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
 // Define encoder network layers
-console.log("Discriminator");
 const discriminator = {
 	"model": tf.sequential(),
 	"calculateLoss": () => tf.tidy(
@@ -76,12 +82,17 @@ const discriminator = {
 	"optimizer": tf.train.sgd(0.0001)
 };
 
+if (logData) {
+	console.log("Discriminator");
+	console.log(imageVolume);
+}
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
-console.log(imageVolume);
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
 	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
-	console.log(layerSize);
+	if (logData) {
+		console.log(layerSize);
+	}
 }
 
 // Neural network training/optimization
@@ -129,10 +140,14 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			(element) => trainingData.pixels[i].push(element)
 		);
 	}
+
+	for (var i = 0; i < numTrainingImages; i ++) {
+		trainingData.pixels.push();
+	}
 	// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
 	trainingData.tensor.input = tf.tensor(trainingData.pixels);
 
-	trainingData.tensor.output = tf.ones([numTrainingImages, 1]);
+	trainingData.tensor.output = tf.ones([numTrainingImages, 6]);
 	trainingData.tensor.output.dtype = "float32";
 
 	// Pick a random image from the testing data set to test the network on
@@ -159,22 +174,24 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
-		console.log("Iteration " + iteration);
+		if (logData) {
+			console.log("Iteration " + iteration);
 
-		console.log("Generator network loss");
-		printLoss(generator);
-		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
+			console.log("Generator network loss");
+			printLoss(generator);
+			// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
+
+			console.log("Discriminator network loss");
+			printLoss(discriminator);
+			// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
+
+			// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
+			console.log("Memory information");
+			console.log(tf.memory());
+		}
+
 		generator.optimizer.minimize(generator.calculateLoss);
-
-		console.log("Discriminator network loss");
-		printLoss(discriminator);
-		// Minimize the error/cost calculated by the loss calculation funcion using the optimization function
 		discriminator.optimizer.minimize(discriminator.calculateLoss);
-
-		// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
-		console.log("Memory information");
-		console.log(tf.memory());
-
 		// All this is just display code
 		// Calculate autoencoder output from original image
 		const output =
