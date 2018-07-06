@@ -59,7 +59,7 @@ if (logData) {
 generator.model.add(tf.layers.dense({units: numParameters, inputShape: [numParameters]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
-	generator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
+	generator.model.add(tf.layers.dense({units: layerSize, activation: "sigmoid"}));
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -90,7 +90,7 @@ if (logData) {
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
-	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
+	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "sigmoid"}));
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -240,7 +240,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		generatorLoss.dispose();
 		discriminatorLoss.dispose();
 
-		// generator.optimizer.minimize(generator.calculateLoss);
+		generator.optimizer.minimize(generator.calculateLoss);
 		discriminator.optimizer.minimize(discriminator.calculateLoss);
 
 		// All this is just display code
