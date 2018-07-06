@@ -59,7 +59,7 @@ if (logData) {
 generator.model.add(tf.layers.dense({units: numParameters, inputShape: [numParameters]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
-	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
+	generator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -252,14 +252,14 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				// Decode the low-dimensional representation of the input data created by the encoder
 				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
-				.clipByValue(0, 255)
+				.clipByValue(0, 1)
 				// Reshape the output tensor into an image format (W * L * 3)
 				.reshape(
 					[imageSize, imageSize, 3]
 				)
 			}
 		);
-		output.dtype = "int32";
+		// output.dtype = "int32";
 
 		const discriminatorOutput =
 		tf.tidy(
