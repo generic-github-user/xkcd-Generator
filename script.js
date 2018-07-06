@@ -1,7 +1,7 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numParameters = 3;
+const numParameters = 1;
 
 // Size of input and output images in pixels (width and height)
 const imageSize = 32;
@@ -15,8 +15,8 @@ const optimizer = {
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
-const imageVolume = (imageSize ** 2) * 3;
-const numLayers = 10;
+const imageVolume = (imageSize ** 2) * 1;
+const numLayers = 8;
 // Get information for canvas
 const canvas = document.getElementById("canvas");
 // Get context for canvas
@@ -200,7 +200,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Pick a random image from the testing data set to test the network on
 	var index = Math.floor(Math.random() * trainingData.pixels.input.length);
 	// Create image tensor from input image pixel data
-	const input = tf.tensor(trainingData.pixels.input[index], [imageSize, imageSize, 3]);
+	const input = tf.tensor(trainingData.pixels.input[index], [imageSize, imageSize, 1]);
 	// Set input image tensor dtype to "int32"
 	input.dtype = "int32";
 	// Display input image on the input canvas, then dispose of the input tensor
@@ -260,7 +260,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
 				.reshape(
-					[imageSize, imageSize, 3]
+					[imageSize, imageSize, 1]
 				)
 			}
 		);
