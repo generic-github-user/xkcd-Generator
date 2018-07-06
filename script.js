@@ -216,6 +216,9 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			console.log("Discriminator network loss");
 			discriminatorLoss.print();
 
+			console.log("Training data");
+			console.log(trainingData);
+
 			// Print TensorFlow.js memory information to console, including the number of tensors stored in memory (for debugging purposes)
 			console.log("Memory information");
 			console.log(tf.memory());
