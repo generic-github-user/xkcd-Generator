@@ -132,6 +132,13 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		// Loop through each training image
 
 		for (var i = 0; i < numTrainingImages; i ++) {
+			if (trainingData.tensor.input) {
+				trainingData.tensor.input.dispose();
+			}
+			if (trainingData.tensor.output) {
+				trainingData.tensor.output.dispose();
+			}
+
 			// Create a tensor with 3 (RGB) color channels from the image element
 			pixels =
 			tf.tidy(
@@ -154,7 +161,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				(element) => pixelsArray.push(element)
 			);
 			trainingData.pixels.input.push(pixelsArray);
-			
+
 			outputValues = new Array(numParameters).fill(1);
 			trainingData.pixels.output.push(outputValues);
 
