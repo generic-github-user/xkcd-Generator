@@ -90,7 +90,7 @@ if (logData) {
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
-	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
+	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
 	if (logData) {
 		console.log(layerSize);
 	}
