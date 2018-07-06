@@ -123,21 +123,28 @@ for (var i = 0; i < numTrainingImages; i ++) {
 
 // Wait for last image (testing data) to load before continuing
 trainingData.images[trainingData.images.length - 1].onload = function () {
+	var pixels;
+	var pixelsArray;
+	var outputValues;
 	function generateTrainingData() {
 		// Create training data from pixels of image elements
 		// Create a new variable to store the data
-		var pixels;
-		var pixelsArray;
-		var outputValues;
 		// Loop through each training image
 
 		for (var i = 0; i < numTrainingImages; i ++) {
 			// Create a tensor with 3 (RGB) color channels from the image element
-			pixels = tf.fromPixels(trainingData.images[i], numParameters);
-			// Resize image to the specified dimensions with resizeBilinear()
-			pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
-			// Get the values array from the pixels tensor
-			pixels = pixels.dataSync();
+			pixels =
+			tf.tidy(
+				() => {
+					// Resize image to the specified dimensions with resizeBilinear()
+					return tf.image.resizeBilinear(
+						tf.fromPixels(trainingData.images[i], numParameters),
+						[imageSize, imageSize]
+					)
+					// Get the values array from the pixels tensor
+					.dataSync()
+				}
+			);
 			// Add new array to trainingData.pixels.input to store the pixel values for the image
 			pixelsArray = [];
 			// Loop through each value in the pixels array
@@ -147,11 +154,15 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				(element) => pixelsArray.push(element)
 			);
 			trainingData.pixels.input.push(pixelsArray);
+			
 			outputValues = new Array(numParameters).fill(1);
 			trainingData.pixels.output.push(outputValues);
 
 			// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
-			const generated = generator.model.predict(parameters.display).dataSync();
+			const generated =
+			tf.tidy(
+				() => generator.model.predict(parameters.display).dataSync()
+			);
 			const generatedArray = [];
 			generated.forEach(
 				(element) => generatedArray.push(element)
@@ -183,6 +194,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
+		generateTrainingData();
+
 		generatorLoss = generator.calculateLoss();
 		discriminatorLoss = discriminator.calculateLoss();
 
