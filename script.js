@@ -1,9 +1,10 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numLayers = 7;
+const numParameters = 3;
+const numLayers = 4;
 // Size of input and output images in pixels (width and height)
-const imageSize = 16;
+const imageSize = 4;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
 const logData = true;
@@ -11,14 +12,13 @@ const logData = true;
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 3;
-
 // Get information for canvas
 const canvas = document.getElementById("canvas");
 // Get context for canvas
 const context = canvas.getContext("2d");
 const parameters = {
-	"training": tf.randomNormal([15, 6]),
-	"display": tf.randomNormal([1, 6])
+	"training": tf.randomNormal([15, numParameters]),
+	"display": tf.randomNormal([1, numParameters])
 }
 var iteration = 0;
 
@@ -45,18 +45,18 @@ const generator = {
 				discriminator.model.predict(
 					generator.model.predict(parameters.training)
 				),
-				tf.ones([15, 6])
+				tf.ones([15, numParameters])
 			);
-		},
+		}
 	),
-	"optimizer": tf.train.sgd(0.001)
+	"optimizer": tf.train.adam(0.0001)
 };
 
 if (logData) {
 	console.log("Generator");
-	console.log(6);
+	console.log(numParameters);
 }
-generator.model.add(tf.layers.dense({units: 6, inputShape: [6]}));
+generator.model.add(tf.layers.dense({units: numParameters, inputShape: [numParameters]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** ((numLayers - 1) - i)));
 	generator.model.add(tf.layers.dense({units: layerSize, activation: "relu"}));
@@ -80,7 +80,7 @@ const discriminator = {
 			);
 		}
 	),
-	"optimizer": tf.train.sgd(0.0001)
+	"optimizer": tf.train.adam(0.0001)
 };
 
 if (logData) {
@@ -132,7 +132,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	for (var i = 0; i < numTrainingImages; i ++) {
 		// Create a tensor with 3 (RGB) color channels from the image element
-		pixels = tf.fromPixels(trainingData.images[i], 3);
+		pixels = tf.fromPixels(trainingData.images[i], numParameters);
 		// Resize image to the specified dimensions with resizeBilinear()
 		pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
 		// Get the values array from the pixels tensor
@@ -146,7 +146,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			(element) => pixelsArray.push(element)
 		);
 		trainingData.pixels.input.push(pixelsArray);
-		outputValues = new Array(6).fill(1);
+		outputValues = new Array(numParameters).fill(1);
 		trainingData.pixels.output.push(outputValues);
 
 		// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
@@ -157,7 +157,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		);
 		trainingData.pixels.input.push(generatedArray);
 
-		outputValues = new Array(6).fill(-1);
+		outputValues = new Array(numParameters).fill(-1);
 		trainingData.pixels.output.push(outputValues);
 	}
 
@@ -196,14 +196,22 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			console.log("Memory information");
 			console.log(tf.memory());
 		}
-		document.querySelector("#generator-loss").innerHTML = "Generator &#8226; " + generatorLoss.dataSync();
-		document.querySelector("#discriminator-loss").innerHTML = "Discriminator &#8226; " + discriminatorLoss.dataSync();
+		document.querySelector("#iteration").innerHTML = "Iteration &#8226; " + iteration;
+		document.querySelector("#generator-loss").innerHTML = "Generator &#8226; " +
+		generatorLoss.
+		dataSync()[0].
+		toFixed(2);
+		document.querySelector("#discriminator-loss").innerHTML = "Discriminator &#8226; " +
+		discriminatorLoss.
+		dataSync()[0].
+		toFixed(2);
 
 		generatorLoss.dispose();
 		discriminatorLoss.dispose();
 
 		generator.optimizer.minimize(generator.calculateLoss);
 		discriminator.optimizer.minimize(discriminator.calculateLoss);
+
 		// All this is just display code
 		// Calculate autoencoder output from original image
 		const output =
