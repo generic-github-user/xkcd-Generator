@@ -123,47 +123,51 @@ for (var i = 0; i < numTrainingImages; i ++) {
 
 // Wait for last image (testing data) to load before continuing
 trainingData.images[trainingData.images.length - 1].onload = function () {
-	// Create training data from pixels of image elements
-	// Create a new variable to store the data
-	var pixels;
-	var pixelsArray;
-	var outputValues;
-	// Loop through each training image
+	function generateTrainingData() {
+		// Create training data from pixels of image elements
+		// Create a new variable to store the data
+		var pixels;
+		var pixelsArray;
+		var outputValues;
+		// Loop through each training image
 
-	for (var i = 0; i < numTrainingImages; i ++) {
-		// Create a tensor with 3 (RGB) color channels from the image element
-		pixels = tf.fromPixels(trainingData.images[i], numParameters);
-		// Resize image to the specified dimensions with resizeBilinear()
-		pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
-		// Get the values array from the pixels tensor
-		pixels = pixels.dataSync();
-		// Add new array to trainingData.pixels.input to store the pixel values for the image
-		pixelsArray = [];
-		// Loop through each value in the pixels array
-		// The whole pixels array is not pushed on at once because the array format will be incompatible
-		pixels.forEach(
-			// Add color value to the corresponding image's trainingData.pixels.input array
-			(element) => pixelsArray.push(element)
-		);
-		trainingData.pixels.input.push(pixelsArray);
-		outputValues = new Array(numParameters).fill(1);
-		trainingData.pixels.output.push(outputValues);
+		for (var i = 0; i < numTrainingImages; i ++) {
+			// Create a tensor with 3 (RGB) color channels from the image element
+			pixels = tf.fromPixels(trainingData.images[i], numParameters);
+			// Resize image to the specified dimensions with resizeBilinear()
+			pixels = tf.image.resizeBilinear(pixels, [imageSize, imageSize]);
+			// Get the values array from the pixels tensor
+			pixels = pixels.dataSync();
+			// Add new array to trainingData.pixels.input to store the pixel values for the image
+			pixelsArray = [];
+			// Loop through each value in the pixels array
+			// The whole pixels array is not pushed on at once because the array format will be incompatible
+			pixels.forEach(
+				// Add color value to the corresponding image's trainingData.pixels.input array
+				(element) => pixelsArray.push(element)
+			);
+			trainingData.pixels.input.push(pixelsArray);
+			outputValues = new Array(numParameters).fill(1);
+			trainingData.pixels.output.push(outputValues);
 
-		// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
-		const generated = generator.model.predict(parameters.display).dataSync();
-		const generatedArray = [];
-		generated.forEach(
-			(element) => generatedArray.push(element)
-		);
-		trainingData.pixels.input.push(generatedArray);
+			// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
+			const generated = generator.model.predict(parameters.display).dataSync();
+			const generatedArray = [];
+			generated.forEach(
+				(element) => generatedArray.push(element)
+			);
+			trainingData.pixels.input.push(generatedArray);
 
-		outputValues = new Array(numParameters).fill(-1);
-		trainingData.pixels.output.push(outputValues);
+			outputValues = new Array(numParameters).fill(-1);
+			trainingData.pixels.output.push(outputValues);
+		}
+
+		// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
+		trainingData.tensor.input = tf.tensor(trainingData.pixels.input);
+		trainingData.tensor.output = tf.tensor(trainingData.pixels.output);
 	}
 
-	// Create a tensor from the pixel values of the training data and store it in trainingData.tensor.input
-	trainingData.tensor.input = tf.tensor(trainingData.pixels.input);
-	trainingData.tensor.output = tf.tensor(trainingData.pixels.output);
+	generateTrainingData();
 
 	// trainingData.tensor.output = tf.ones([numTrainingImages, 6]);
 	// trainingData.tensor.output.dtype = "float32";
