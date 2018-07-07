@@ -1,1 +1,2 @@
 # xkcd-Generator
+xkcd-Generator is a machine learning algorithm designed to generate new comics in the style of *[xkcd](https://xkcd.com/)*. It uses a generative adversarial neural network, or GAN, as described in *Generative Adversarial Nets* by Ian J. Goodfellow Et al. The neural network is trained on 15 comics (1000 - 1014) from *xkcd*, which are converted to a grayscale color range and resized with bilinear sampling to dimensions of 32 pixels by 32 pixels. These are then flattened to form arrays of 1,024 pixels each.
