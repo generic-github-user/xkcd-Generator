@@ -7,16 +7,16 @@ const numParameters = 1;
 const imageSize = 32;
 // Number of images to use when training the neural network
 const numTrainingImages = 15;
-const logData = true;
+const logData = false;
 const optimizer = {
-	"generator": tf.train.adam(0.01),
-	"discriminator": tf.train.adam(0.01)
+	"generator": tf.train.adam(0.0001),
+	"discriminator": tf.train.sgd(0.0001)
 }
 
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 1;
-const numLayers = 8;
+const numLayers = 10;
 // Get information for canvas
 const canvas = document.getElementById("canvas");
 // Get context for canvas
@@ -46,7 +46,7 @@ const generator = {
 		// Do we need these tidys?
 		() => {
 			// Evaluate the loss function given the output of the autoencoder network and the actual image
-			return loss(
+			return tf.losses.logLoss(
 				discriminator.model.predict(
 					generator.model.predict(parameters.training).clipByValue(0, 255)
 				),
@@ -95,7 +95,7 @@ if (logData) {
 discriminator.model.add(tf.layers.dense({units: imageVolume, inputShape: [imageVolume]}));
 for (var i = 0; i < numLayers; i ++) {
 	const layerSize = Math.round(imageVolume / (2 ** (i + 1)));
-	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "tanh"}));
+	discriminator.model.add(tf.layers.dense({units: layerSize, activation: "sigmoid"}));
 	if (logData) {
 		console.log(layerSize);
 	}
@@ -183,7 +183,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			);
 			trainingData.pixels.input.push(generatedArray);
 
-			outputValues = new Array(numParameters).fill(-1);
+			outputValues = new Array(numParameters).fill(0);
 			trainingData.pixels.output.push(outputValues);
 		}
 
@@ -257,7 +257,6 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				// Decode the low-dimensional representation of the input data created by the encoder
 				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
-				.clipByValue(0, 255)
 				// Reshape the output tensor into an image format (W * L * 3)
 				.reshape(
 					[imageSize, imageSize, 1]
@@ -284,13 +283,13 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		}
 
 		// Display the output tensor on the output canvas, then dispose the tensor
-		tf.toPixels(output, canvas).then(() => output.dispose());
+		tf.toPixels(output.clipByValue(0, 255), canvas).then(() => output.dispose());
 		discriminatorOutput.dispose();
 
 		iteration ++;
 	}
 	// Set an interval of 100 milliseconds to repeat the train() function
-	var interval = window.setInterval(train, 10);
+	var interval = window.setInterval(train, 1);
 }
 // Load source paths for training data images (this must be done after the image elements are created and the onload function is defined)
 // Loop through each image element
