@@ -9,8 +9,8 @@ const imageSize = 32;
 const numTrainingImages = 15;
 const logData = false;
 const optimizer = {
-	"generator": tf.train.adam(0.0001),
-	"discriminator": tf.train.sgd(0.0001)
+	"generator": tf.train.adam(0.001),
+	"discriminator": tf.train.sgd(0.001)
 }
 
 // Automatically generated settings and parameters
@@ -170,8 +170,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 			outputValues = new Array(numParameters).fill(1);
 			trainingData.pixels.output.push(outputValues);
-
-
+		}
+		for (var i = 0; i < numTrainingImages; i ++) {
 			// Uncaught Error: Constructing tensor of shape (92160) should match the length of values (46095)
 			const generated =
 			tf.tidy(
