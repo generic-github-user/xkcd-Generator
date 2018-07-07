@@ -1,7 +1,7 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numParameters = 1;
+const numParameters = 32;
 
 // Size of input and output images in pixels (width and height)
 const imageSize = 32;
@@ -16,7 +16,7 @@ const optimizer = {
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 1;
-const numLayers = 10;
+const numLayers = 5;
 // Get information for canvas
 const canvas = document.getElementById("canvas");
 // Get context for canvas
@@ -151,7 +151,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				() => {
 					// Resize image to the specified dimensions with resizeBilinear()
 					return tf.image.resizeBilinear(
-						tf.fromPixels(trainingData.images[i], numParameters),
+						tf.fromPixels(trainingData.images[i], 1),
 						[imageSize, imageSize]
 					)
 					// Get the values array from the pixels tensor
