@@ -18,9 +18,15 @@ const optimizer = {
 const imageVolume = (imageSize ** 2) * 1;
 const numLayers = 5;
 // Get information for canvas
-const canvas = document.getElementById("canvas");
+const canvas = {
+	"real": document.getElementById("real"),
+	"generated": document.getElementById("generated")
+}
 // Get context for canvas
-const context = canvas.getContext("2d");
+const canvasContext = {
+	"real": canvas.real.getContext("2d"),
+	"generated": canvas.generated.getContext("2d")
+}
 const parameters = {
 	"training": tf.randomNormal([15, numParameters], 0, 255),
 	"display": tf.randomNormal([1, numParameters], 0, 255)
@@ -29,8 +35,10 @@ var iteration = 0;
 
 // Set canvas dimensions to match specified image dimensions
 // Input canvas
-canvas.width = imageSize;
-canvas.height = imageSize;
+canvas.real.width = imageSize;
+canvas.real.height = imageSize;
+canvas.generated.width = imageSize;
+canvas.generated.height = imageSize;
 
 // Define generator network with the high-level TensorFlow.js layers system
 // This network takes a low-dimensional input image and reduces it to a low-dimensional "latent-space" representation
@@ -194,6 +202,9 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 
 	generateTrainingData();
 
+	const real = tf.tensor1d(trainingData.pixels.input[Math.floor(Math.random() * Math.floor(trainingData.pixels.input.length / 2))], "int32").reshape([imageSize, imageSize, 1]);
+	tf.toPixels(real, canvas.real).then(() => real.dispose());
+
 	// trainingData.tensor.output = tf.ones([numTrainingImages, 6]);
 	// trainingData.tensor.output.dtype = "float32";
 
@@ -204,7 +215,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 	// Set input image tensor dtype to "int32"
 	input.dtype = "int32";
 	// Display input image on the input canvas, then dispose of the input tensor
-	tf.toPixels(input, canvas).then(() => input.dispose());
+	tf.toPixels(input, canvas.generated).then(() => input.dispose());
 
 	// Define training function for class-matching neural network - this will be executed iteratively
 	function train() {
@@ -283,7 +294,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		}
 
 		// Display the output tensor on the output canvas, then dispose the tensor
-		tf.toPixels(output.clipByValue(0, 255), canvas).then(() => output.dispose());
+		tf.toPixels(output.clipByValue(0, 255), canvas.generated).then(() => output.dispose());
 		discriminatorOutput.dispose();
 
 		iteration ++;
