@@ -1,12 +1,12 @@
 // Main JavaScript for xkcd Generator
 
 // Define settings
-const numParameters = 32;
+const numParameters = 4;
 
 // Size of input and output images in pixels (width and height)
-const imageSize = 32;
+const imageSize = 8;
 // Number of images to use when training the neural network
-const numTrainingImages = 15;
+const numTrainingImages = 1;
 const logData = false;
 const optimizer = {
 	"generator": tf.train.adam(0.001),
@@ -16,7 +16,7 @@ const optimizer = {
 // Automatically generated settings and parameters
 // Volume of image data, calculated by squaring imageSize to find the area of the image (total number of pixels) and multiplying by three for each color channel (RGB)
 const imageVolume = (imageSize ** 2) * 1;
-const numLayers = 5;
+const numLayers = 4;
 // Get information for canvas
 const canvas = {
 	"real": document.getElementById("real"),
@@ -256,8 +256,19 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		generatorLoss.dispose();
 		discriminatorLoss.dispose();
 
-		generator.optimizer.minimize(generator.calculateLoss);
-		discriminator.optimizer.minimize(discriminator.calculateLoss);
+		const trainableVars = [];
+		for (var i = 0; i < generator.model.weights.length; i ++) {
+			trainableVars.push(generator.model.weights[i].val);
+		}
+		for (var i = 0; i < generator.model.model.weights.length; i ++) {
+			trainableVars.push(generator.model.model.weights[i].val);
+		}
+			generator.optimizer.minimize(
+				generator.calculateLoss,
+				false,
+				trainableVars
+			);
+		// }
 
 		// All this is just display code
 		// Calculate autoencoder output from original image
