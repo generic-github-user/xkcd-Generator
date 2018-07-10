@@ -7,7 +7,7 @@ const numParameters = 4;
 const imageSize = 8;
 // Number of images to use when training the neural network
 const numTrainingImages = 1;
-const logData = false;
+const logData = true;
 const optimizer = {
 	"generator": tf.train.adam(0.001),
 	"discriminator": tf.train.sgd(0.001)
@@ -223,8 +223,8 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 			generateTrainingData();
 		}
 
-		generatorLoss = generator.calculateLoss();
-		discriminatorLoss = discriminator.calculateLoss();
+		const generatorLoss = generator.calculateLoss();
+		const discriminatorLoss = discriminator.calculateLoss();
 
 		if (logData) {
 			console.log("Iteration " + iteration);
@@ -245,16 +245,11 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		}
 		document.querySelector("#iteration").innerHTML = "Iteration &#8226; " + iteration;
 		document.querySelector("#generator-loss").innerHTML = "Generator &#8226; " +
-		generatorLoss.
-		dataSync()[0].
-		toFixed(2);
+		generatorLoss
+		.dataSync()[0];
 		document.querySelector("#discriminator-loss").innerHTML = "Discriminator &#8226; " +
-		discriminatorLoss.
-		dataSync()[0].
-		toFixed(2);
-
-		generatorLoss.dispose();
-		discriminatorLoss.dispose();
+		discriminatorLoss
+		.dataSync()[0];
 
 		const trainableVars = [];
 		for (var i = 0; i < generator.model.weights.length; i ++) {
@@ -263,12 +258,24 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		for (var i = 0; i < generator.model.model.weights.length; i ++) {
 			trainableVars.push(generator.model.model.weights[i].val);
 		}
+		// if (generatorLoss > discriminatorLoss) {
 			generator.optimizer.minimize(
 				generator.calculateLoss,
 				false,
 				trainableVars
 			);
 		// }
+		// else {
+			discriminator.optimizer.minimize(discriminator.calculateLoss);
+		// }
+
+		// if (discriminatorLoss < 0.05) {
+		// 	generator.optimizer.minimize(generator.calculateLoss);
+		// }
+		// discriminator.optimizer.minimize(discriminator.calculateLoss);
+
+		generatorLoss.dispose();
+		discriminatorLoss.dispose();
 
 		// All this is just display code
 		// Calculate autoencoder output from original image
@@ -280,6 +287,7 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 				return generator.model.predict(parameters.display)
 				// Clip pixel values to a 0 - 255 (int32) range
 				// Reshape the output tensor into an image format (W * L * 3)
+				.clipByValue(0, 255)
 				.reshape(
 					[imageSize, imageSize, 1]
 				)
@@ -291,21 +299,21 @@ trainingData.images[trainingData.images.length - 1].onload = function () {
 		tf.tidy(
 			() => {
 				return discriminator.model.predict(
-					generator.model.predict(parameters.display).clipByValue(0, 255)
+					generator.model.predict(parameters.display)
 				);
 			}
 		);
 
 		if (logData) {
 			console.log("Generator output");
-			output.print();
+			// output.print();
 
 			console.log("Discriminator output");
 			discriminatorOutput.print();
 		}
 
 		// Display the output tensor on the output canvas, then dispose the tensor
-		tf.toPixels(output.clipByValue(0, 255), canvas.generated).then(() => output.dispose());
+		tf.toPixels(output, canvas.generated).then(() => output.dispose());
 		discriminatorOutput.dispose();
 
 		iteration ++;
